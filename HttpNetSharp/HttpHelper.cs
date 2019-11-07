@@ -1,30 +1,18 @@
-﻿
-using System.Collections;
-using System.Data;
-using System.Diagnostics;
-using System.Xml.Linq;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net;
+﻿using System.Net;
 using HttpNetHelper.BaseBll;
 using System.Drawing;
 using HttpNetHelper.Helper;
-using System.Collections.Specialized;
-using System.Runtime.Remoting.Messaging;
 
 namespace HttpNetHelper
 {
-	/// <summary>
-	/// Http帮助类  
-	/// 版本：1.0.0
-	/// 作者：零点
-	/// 更新时间：2019-11-7
-	/// </summary>
+    /// <summary>
+    /// Http帮助类  
+    /// 版本：1.0.0
+    /// 作者：零点
+    /// 更新时间：2019-11-7
+    /// </summary>
 
-	public class HttpHelper
+    public class HttpHelper
 	{
 #region Private Obj
 
