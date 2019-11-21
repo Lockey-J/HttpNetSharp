@@ -25,12 +25,15 @@ namespace HttpNetHelper.BaseBll
 		/// Httphelper原始访问类对象
 		/// </summary>
 		private HttpNetHelperBase httpbase = new HttpNetHelperBase();
-		/// <summary>
-		/// 根据相传入的数据，得到相应页面数据
-		/// </summary>
-		/// <param name="item">参数类对象</param>
-		/// <returns>返回HttpResult类型</returns>
-		internal HttpResult GetHtml(HttpItem item)
+
+        internal HttpNetHelperBase Httpbase { get => httpbase; set => httpbase = value; }
+
+        /// <summary>
+        /// 根据相传入的数据，得到相应页面数据
+        /// </summary>
+        /// <param name="item">参数类对象</param>
+        /// <returns>返回HttpResult类型</returns>
+        internal HttpResult GetHtml(HttpItem item)
 		{
 			if (item.Allowautoredirect && item.AutoRedirectCookie)
 			{
@@ -38,7 +41,7 @@ namespace HttpNetHelper.BaseBll
 				for (int i = 0; i <= 99; i++)
 				{
 					item.Allowautoredirect = false;
-					result = httpbase.GetHtml(item);
+					result = Httpbase.GetHtml(item);
 					if (string.IsNullOrWhiteSpace(result.RedirectUrl))
 					{
 						break;
@@ -66,7 +69,7 @@ namespace HttpNetHelper.BaseBll
 				}
 				return result;
 			}
-			return httpbase.GetHtml(item);
+			return Httpbase.GetHtml(item);
 		}
 		/// <summary>
 		/// 根据Url获取图片
@@ -87,7 +90,7 @@ namespace HttpNetHelper.BaseBll
 		/// <returns>返回HttpResult类型</returns>
 		internal HttpResult FastRequest(HttpItem item)
 		{
-			return httpbase.FastRequest(item);
+			return Httpbase.FastRequest(item);
 		}
 
 	}

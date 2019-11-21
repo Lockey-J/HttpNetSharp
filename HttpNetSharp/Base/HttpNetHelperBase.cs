@@ -3,7 +3,6 @@ using System.Collections;
 using System.Data;
 using System.Diagnostics;
 using System.Xml.Linq;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,18 +34,24 @@ namespace HttpNetHelper.Base
 		private HttpWebResponse response = null;
 		//设置本地的出口ip和端口
 		private IPEndPoint _IPEndPoint = null;
-#endregion
-#region internal
-		/// <summary>
-		/// 根据相传入的数据，得到相应页面数据
-		/// </summary>
-		/// <param name="item">参数类对象</param>
-		/// <returns>返回HttpResult类型</returns>
-		internal HttpResult GetHtml(HttpItem item)
+
+        public Encoding Encoding { get => encoding; set => encoding = value; }
+        public Encoding Postencoding { get => postencoding; set => postencoding = value; }
+        public HttpWebRequest Request { get => request; set => request = value; }
+        public HttpWebResponse Response { get => response; set => response = value; }
+        public IPEndPoint IPEndPoint { get => _IPEndPoint; set => _IPEndPoint = value; }
+        #endregion
+        #region internal
+        /// <summary>
+        /// 根据相传入的数据，得到相应页面数据
+        /// </summary>
+        /// <param name="item">参数类对象</param>
+        /// <returns>返回HttpResult类型</returns>
+        internal HttpResult GetHtml(HttpItem item)
 		{
 			//返回参数
 			HttpResult result = new HttpResult();
-			result.item = item;
+			result.Item = item;
 			try
 			{
 				//准备参数
@@ -66,8 +71,8 @@ namespace HttpNetHelper.Base
 			try
 			{
 				//请求数据
-				response = (HttpWebResponse)request.GetResponse();
-				using (response)
+				Response = (HttpWebResponse)Request.GetResponse();
+				using (Response)
 				{
 					GetData(item, ref result);
 				}
@@ -76,8 +81,8 @@ namespace HttpNetHelper.Base
 			{
 				if (ex.Response != null)
 				{
-					response = (HttpWebResponse)ex.Response;
-					using (response)
+					Response = (HttpWebResponse)ex.Response;
+					using (Response)
 					{
 						GetData(item, ref result);
 					}
@@ -99,15 +104,15 @@ namespace HttpNetHelper.Base
 			//重置request，response为空
 			if (item.IsReset)
 			{
-				if (request != null)
+				if (Request != null)
 				{
-					request.Abort();
-					request = null;
+					Request.Abort();
+					Request = null;
 				}
-				if (response != null)
+				if (Response != null)
 				{
-					response.Close();
-					response = null;
+					Response.Close();
+					Response = null;
 				}
 
 			}
@@ -122,7 +127,7 @@ namespace HttpNetHelper.Base
 		{
 			//返回参数
 			HttpResult result = new HttpResult();
-			result.item = item;
+			result.Item = item;
 			try
 			{
 				//准备参数
@@ -133,7 +138,7 @@ namespace HttpNetHelper.Base
 				//配置参数时出错
 				return new HttpResult()
 				{
-					Cookie = ((response.Headers["set-cookie"] != null) ? response.Headers["set-cookie"] : string.Empty),
+					Cookie = ((Response.Headers["set-cookie"] != null) ? Response.Headers["set-cookie"] : string.Empty),
 					Header = null,
 					Html = ex.Message,
 					StatusDescription = "配置参数时出错：" + ex.Message
@@ -142,31 +147,31 @@ namespace HttpNetHelper.Base
 			try
 			{
 				//请求数据
-				response = (HttpWebResponse)request.GetResponse();
-				using (response)
+				Response = (HttpWebResponse)Request.GetResponse();
+				using (Response)
 				{
 					//成功 不做处理只回成功状态
 					return new HttpResult()
 					{
-						Cookie = ((response.Headers["set-cookie"] != null) ? response.Headers["set-cookie"] : string.Empty),
-						Header = response.Headers,
-						StatusCode = response.StatusCode,
-						StatusDescription = response.StatusDescription
+						Cookie = ((Response.Headers["set-cookie"] != null) ? Response.Headers["set-cookie"] : string.Empty),
+						Header = Response.Headers,
+						StatusCode = Response.StatusCode,
+						StatusDescription = Response.StatusDescription
 					};
 				}
 			}
 			catch (WebException ex)
 			{
-				response = (HttpWebResponse)ex.Response;
-				using (response)
+				Response = (HttpWebResponse)ex.Response;
+				using (Response)
 				{
 					//不做处理只回成功状态
 					return new HttpResult()
 					{
-						Cookie = ((response.Headers["set-cookie"] != null) ? response.Headers["set-cookie"] : string.Empty),
-						Header = response.Headers,
-						StatusCode = response.StatusCode,
-						StatusDescription = response.StatusDescription
+						Cookie = ((Response.Headers["set-cookie"] != null) ? Response.Headers["set-cookie"] : string.Empty),
+						Header = Response.Headers,
+						StatusCode = Response.StatusCode,
+						StatusDescription = Response.StatusDescription
 					};
 				}
 			}
@@ -190,28 +195,28 @@ namespace HttpNetHelper.Base
 		/// <param name="result"></param>
 		private void GetData(HttpItem item, ref HttpResult result)
 		{
-			if (response == null)
+			if (Response == null)
 			{
 				return;
 			}
 			//			#Region "base"
 			//获取StatusCode
-			result.StatusCode = response.StatusCode;
+			result.StatusCode = Response.StatusCode;
 			//获取最后访问的URl
-			result.ResponseUri = response.ResponseUri.ToString();
+			result.ResponseUri = Response.ResponseUri.ToString();
 			//获取StatusDescription
-			result.StatusDescription = response.StatusDescription;
+			result.StatusDescription = Response.StatusDescription;
 			//获取Headers
-			result.Header = response.Headers;
+			result.Header = Response.Headers;
 			//获取CookieCollection
-			if (response.Cookies != null)
+			if (Response.Cookies != null)
 			{
-				result.CookieCollection = response.Cookies;
+				result.CookieCollection = Response.Cookies;
 			}
 			//获取set-cookie
-			if (response.Headers["set-cookie"] != null)
+			if (Response.Headers["set-cookie"] != null)
 			{
-				result.Cookie = response.Headers["set-cookie"];
+				result.Cookie = Response.Headers["set-cookie"];
 			}
 			//Cookie是否自动更新为请求所获取的新Cookie值 
 			if (item.IsUpdateCookie)
@@ -259,14 +264,14 @@ namespace HttpNetHelper.Base
 			else if (item.ResultType == ResultType.String)
 			{
 				//得到返回的HTML
-				result.Html = encoding.GetString(enByte);
+				result.Html = Encoding.GetString(enByte);
 			}
 			else if (item.ResultType == ResultType.StringByte)
 			{
 				//Byte数据
 				result.ResultByte = enByte;
 				//得到返回的HTML
-				result.Html = encoding.GetString(enByte);
+				result.Html = Encoding.GetString(enByte);
 			}
 		}
 		/// <summary>
@@ -278,7 +283,7 @@ namespace HttpNetHelper.Base
 		private void SetEncoding(HttpItem item, HttpResult result, byte[] ResponseByte)
 		{
 			//从这里开始我们要无视编码了
-			if (encoding == null)
+			if (Encoding == null)
 			{
 				Match meta = Regex.Match(Encoding.Default.GetString(ResponseByte), "<meta[^<]*charset=([^<]*)[\"']", RegexOptions.IgnoreCase);
 				string c = string.Empty;
@@ -289,24 +294,24 @@ namespace HttpNetHelper.Base
 				string cs = string.Empty;
 				if (!string.IsNullOrWhiteSpace(response.CharacterSet))
 				{
-					cs = response.CharacterSet.Trim().Replace("\"", "").Replace("'", "");
+					cs = Response.CharacterSet.Trim().Replace("\"", "").Replace("'", "");
 				}
 
 				if (c.Length > 2)
 				{
 					try
 					{
-						encoding = Encoding.GetEncoding(c.Replace("\"", string.Empty).Replace("'", "").Replace(";", "").Replace("iso-8859-1", "gbk").Trim());
+						Encoding = Encoding.GetEncoding(c.Replace("\"", string.Empty).Replace("'", "").Replace(";", "").Replace("iso-8859-1", "gbk").Trim());
 					}
 					catch
 					{
 						if (string.IsNullOrEmpty(cs))
 						{
-							encoding = Encoding.UTF8;
+							Encoding = Encoding.UTF8;
 						}
 						else
 						{
-							encoding = Encoding.GetEncoding(cs);
+							Encoding = Encoding.GetEncoding(cs);
 						}
 					}
 				}
@@ -314,11 +319,11 @@ namespace HttpNetHelper.Base
 				{
 					if (string.IsNullOrEmpty(cs))
 					{
-						encoding = Encoding.UTF8;
+						Encoding = Encoding.UTF8;
 					}
 					else
 					{
-						encoding = Encoding.GetEncoding(cs);
+						Encoding = Encoding.GetEncoding(cs);
 					}
 				}
 			}
@@ -335,20 +340,20 @@ namespace HttpNetHelper.Base
 				if (item.IsGzip)
 				{
 					//开始读取流并设置编码方式
-					(new GZipStream(response.GetResponseStream(), CompressionMode.Decompress)).CopyTo(_stream);
+					(new GZipStream(Response.GetResponseStream(), CompressionMode.Decompress)).CopyTo(_stream);
 				}
 				else
 				{
 					//GZIIP处理
-					if (response.ContentEncoding.Equals("gzip", StringComparison.InvariantCultureIgnoreCase))
+					if (Response.ContentEncoding.Equals("gzip", StringComparison.InvariantCultureIgnoreCase))
 					{
 						//开始读取流并设置编码方式
-						(new GZipStream(response.GetResponseStream(), CompressionMode.Decompress)).CopyTo(_stream);
+						(new GZipStream(Response.GetResponseStream(), CompressionMode.Decompress)).CopyTo(_stream);
 					}
 					else
 					{
 						//开始读取流并设置编码方式
-						response.GetResponseStream().CopyTo(_stream);
+						Response.GetResponseStream().CopyTo(_stream);
 					}
 				}
 				//获取Byte
@@ -374,12 +379,12 @@ namespace HttpNetHelper.Base
 			}
 			//初始化对像，并设置请求的URL地址
 
-			request = (HttpWebRequest)WebRequest.Create(item.URL);
+			Request = (HttpWebRequest)WebRequest.Create(item.URL);
 			if (item.IPEndPoint != null)
 			{
-				_IPEndPoint = item.IPEndPoint;
+				IPEndPoint = item.IPEndPoint;
 				//设置本地的出口ip和端口
-				request.ServicePoint.BindIPEndPointDelegate = new BindIPEndPoint(BindIPEndPointCallback);
+				Request.ServicePoint.BindIPEndPointDelegate = new BindIPEndPoint(BindIPEndPointCallback);
 			}
 
 			// 验证证书
@@ -390,70 +395,70 @@ namespace HttpNetHelper.Base
 			{
 				foreach (string key in item.Header.AllKeys)
 				{
-					request.Headers.Add(key, item.Header[key]);
+					Request.Headers.Add(key, item.Header[key]);
 				}
 			}
 			// 设置代理
 			SetProxy(item);
 			if (item.ProtocolVersion != null)
 			{
-				request.ProtocolVersion = item.ProtocolVersion;
+				Request.ProtocolVersion = item.ProtocolVersion;
 			}
-			request.ServicePoint.Expect100Continue = item.Expect100Continue;
+			Request.ServicePoint.Expect100Continue = item.Expect100Continue;
 			//请求方式Get或者Post
-			request.Method = item.Method;
-			request.Timeout = item.Timeout;
+			Request.Method = item.Method;
+			Request.Timeout = item.Timeout;
 			//来源地址
-			request.Referer = item.Referer;
+			Request.Referer = item.Referer;
 			//UserAgent客户端的访问类型，包括浏览器版本和操作系统信息
-			request.UserAgent = item.UserAgent;
+			Request.UserAgent = item.UserAgent;
 			//设置Cookie
 			SetCookie(item);
 			if (!string.IsNullOrWhiteSpace(item.Host))
 			{
-				request.Host = item.Host;
+				Request.Host = item.Host;
 			}
-			request.AutomaticDecompression = item.AutomaticDecompression;
+			Request.AutomaticDecompression = item.AutomaticDecompression;
 			//keep-live
-			request.ServicePoint.GetType().GetProperty("HttpBehaviour", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(request.ServicePoint, (byte)0, null);
-			request.KeepAlive = item.KeepAlive;
+			Request.ServicePoint.GetType().GetProperty("HttpBehaviour", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(Request.ServicePoint, (byte)0, null);
+			Request.KeepAlive = item.KeepAlive;
 
-			request.ReadWriteTimeout = item.ReadWriteTimeout;
+			Request.ReadWriteTimeout = item.ReadWriteTimeout;
 
 			if (item.IfModifiedSince != null)
 			{
-				request.IfModifiedSince = Convert.ToDateTime(item.IfModifiedSince);
+				Request.IfModifiedSince = Convert.ToDateTime(item.IfModifiedSince);
 			}
 
 			//Accept
 			if (!string.IsNullOrWhiteSpace(item.Accept))
 			{
-				request.Accept = item.Accept;
+				Request.Accept = item.Accept;
 			}
 
 
 			//ContentType返回类型
 			if (!item.Method.ToLower().Contains("get") && !string.IsNullOrWhiteSpace(item.ContentType))
 			{
-				request.ContentType = item.ContentType;
+				Request.ContentType = item.ContentType;
 			}
 
 			// 编码
-			encoding = item.Encoding;
+			Encoding = item.Encoding;
 			//设置安全凭证
-			request.Credentials = item.ICredentials;
+			Request.Credentials = item.ICredentials;
 
 
 			//是否执行跳转功能
-			request.AllowAutoRedirect = item.Allowautoredirect;
+			Request.AllowAutoRedirect = item.Allowautoredirect;
 			if (item.MaximumAutomaticRedirections > 0)
 			{
-				request.MaximumAutomaticRedirections = item.MaximumAutomaticRedirections;
+				Request.MaximumAutomaticRedirections = item.MaximumAutomaticRedirections;
 			}
 			//设置最大连接
 			if (item.Connectionlimit > 0)
 			{
-				request.ServicePoint.ConnectionLimit = item.Connectionlimit;
+				Request.ServicePoint.ConnectionLimit = item.Connectionlimit;
 			}
 			//当出现"请求被中止: 未能创建 SSL/TLS 安全通道"时需要配置此属性 
 			if (item.SecurityProtocol > 0)
@@ -492,11 +497,11 @@ namespace HttpNetHelper.Base
 				//将证书添加到请求里
 				if (!string.IsNullOrWhiteSpace(item.CerPwd))
 				{
-					request.ClientCertificates.Add(new X509Certificate(item.CerPath, item.CerPwd));
+					Request.ClientCertificates.Add(new X509Certificate(item.CerPath, item.CerPwd));
 				}
 				else
 				{
-					request.ClientCertificates.Add(new X509Certificate(item.CerPath));
+					Request.ClientCertificates.Add(new X509Certificate(item.CerPath));
 				}
 			}
 		}
@@ -510,7 +515,7 @@ namespace HttpNetHelper.Base
 			{
 				foreach (X509Certificate c in item.ClentCertificates)
 				{
-					request.ClientCertificates.Add(c);
+					Request.ClientCertificates.Add(c);
 				}
 			}
 		}
@@ -522,17 +527,17 @@ namespace HttpNetHelper.Base
 		{
 			if (!string.IsNullOrEmpty(item.Cookie))
 			{
-				request.Headers[HttpRequestHeader.Cookie] = item.Cookie;
+				Request.Headers[HttpRequestHeader.Cookie] = item.Cookie;
 			}
 			//设置CookieCollection
 			if (item.ResultCookieType == ResultCookieType.CookieCollection)
 			{
-				request.CookieContainer = new CookieContainer();
+				Request.CookieContainer = new CookieContainer();
 				if (item.CookieCollection != null && item.CookieCollection.Count > 0)
 				{
 					try
 					{
-						request.CookieContainer.Add(new Uri(item.URL), item.CookieCollection);
+						Request.CookieContainer.Add(new Uri(item.URL), item.CookieCollection);
 					}
 					catch (Exception )
 					{
@@ -542,7 +547,7 @@ namespace HttpNetHelper.Base
 			}
 			else if (item.ResultCookieType == ResultCookieType.CookieContainer)
 			{
-				request.CookieContainer = item.CookieContainer;
+				Request.CookieContainer = item.CookieContainer;
 			}
 		}
 		/// <summary>
@@ -552,11 +557,11 @@ namespace HttpNetHelper.Base
 		private void SetPostData(HttpItem item)
 		{
 			//验证在得到结果时是否有传入数据
-			if (!(request.Method.Trim().ToLower().Contains("get")))
+			if (!(Request.Method.Trim().ToLower().Contains("get")))
 			{
 				if (item.PostEncoding != null)
 				{
-					postencoding = item.PostEncoding;
+					Postencoding = item.PostEncoding;
 				}
 				byte[] buffer = null;
 				//写入Byte类型
@@ -579,16 +584,16 @@ namespace HttpNetHelper.Base
 				}
 				else if (!string.IsNullOrWhiteSpace(item.Postdata))
 				{
-					buffer = postencoding.GetBytes(item.Postdata);
+					buffer = Postencoding.GetBytes(item.Postdata);
 				}
 				if (buffer != null)
 				{
-					request.ContentLength = buffer.Length;
-					request.GetRequestStream().Write(buffer, 0, buffer.Length);
+					Request.ContentLength = buffer.Length;
+					Request.GetRequestStream().Write(buffer, 0, buffer.Length);
 				}
 				else
 				{
-					request.ContentLength = 0;
+					Request.ContentLength = 0;
 				}
 			}
 		}
@@ -613,7 +618,7 @@ namespace HttpNetHelper.Base
 					//建议连接
 					myProxy.Credentials = new NetworkCredential(item.ProxyUserName, item.ProxyPwd);
 					//给当前请求对象
-					request.Proxy = myProxy;
+					Request.Proxy = myProxy;
 				}
 				else
 				{
@@ -621,7 +626,7 @@ namespace HttpNetHelper.Base
 					//建议连接
 					myProxy.Credentials = new NetworkCredential(item.ProxyUserName, item.ProxyPwd);
 					//给当前请求对象
-					request.Proxy = myProxy;
+					Request.Proxy = myProxy;
 				}
 			}
 			else if (isIeProxy)
@@ -630,7 +635,7 @@ namespace HttpNetHelper.Base
 			}
 			else
 			{
-				request.Proxy = item.WebProxy;
+				Request.Proxy = item.WebProxy;
 			}
 		}
 #endregion
@@ -658,7 +663,7 @@ namespace HttpNetHelper.Base
 		/// <returns></returns>
 		public IPEndPoint BindIPEndPointCallback(ServicePoint servicePoint, IPEndPoint remoteEndPoint, int retryCount)
 		{
-			return _IPEndPoint; //端口号
+			return IPEndPoint; //端口号
 		}
 		/// <summary>
 		/// 根据文件路径创建上传的字节集

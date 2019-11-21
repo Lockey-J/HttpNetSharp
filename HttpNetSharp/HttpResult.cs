@@ -15,21 +15,9 @@ namespace HttpNetHelper
 	/// </summary>
 	public class HttpResult
 	{
-		/// <summary>
-		/// Http请求返回的Cookie
-		/// </summary>
-		private string m_Cookie;
-		public string Cookie
-		{
-			get
-			{
-				return m_Cookie;
-			}
-			set
-			{
-				m_Cookie = value;
-			}
-		}
+      
+        public string Cookie { get; set; }
+		
 		/// <summary>
 		/// Cookie对象集合
 		/// </summary>
@@ -94,6 +82,7 @@ namespace HttpNetHelper
 		/// <summary>
 		/// HttpItem类，用于存储实际执行所用到的HttpItem对象
 		/// </summary>
-		public HttpItem item {get; set;}
-	}
+		public HttpItem Item {get; set;}
+       
+    }
 }

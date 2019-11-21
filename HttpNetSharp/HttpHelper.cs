@@ -19,7 +19,7 @@ namespace HttpNetHelper
 		/// <summary>
 		/// HttpHelperBLL
 		/// </summary>
-		private HttpHelperBll bll = new HttpHelperBll();
+		private readonly HttpHelperBll bll = new HttpHelperBll();
 
 #endregion
 #region HttpHelper
