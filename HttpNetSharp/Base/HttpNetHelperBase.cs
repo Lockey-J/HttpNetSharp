@@ -23,35 +23,31 @@ namespace HttpNetHelper.Base
 	/// </summary>
 	internal class HttpNetHelperBase
 	{
-#region 预定义方变量
+		#region 预定义方变量
 		//默认的编码
-		private Encoding encoding = System.Text.Encoding.Default;
+		public Encoding Encoding { get; set; } = System.Text.Encoding.Default;
 		//Post数据编码
-		private Encoding postencoding = System.Text.Encoding.Default;
+		public Encoding Postencoding { get; set; } = System.Text.Encoding.Default;
 		//HttpWebRequest对象用来发起请求
-		private HttpWebRequest request = null;
+		public HttpWebRequest Request { get; set; } = null;
 		//获取影响流的数据对象
-		private HttpWebResponse response = null;
+		public HttpWebResponse Response { get; set; } = null;
 		//设置本地的出口ip和端口
-		private IPEndPoint _IPEndPoint = null;
-
-        public Encoding Encoding { get => encoding; set => encoding = value; }
-        public Encoding Postencoding { get => postencoding; set => postencoding = value; }
-        public HttpWebRequest Request { get => request; set => request = value; }
-        public HttpWebResponse Response { get => response; set => response = value; }
-        public IPEndPoint IPEndPoint { get => _IPEndPoint; set => _IPEndPoint = value; }
-        #endregion
-        #region internal
-        /// <summary>
-        /// 根据相传入的数据，得到相应页面数据
-        /// </summary>
-        /// <param name="item">参数类对象</param>
-        /// <returns>返回HttpResult类型</returns>
-        internal HttpResult GetHtml(HttpItem item)
+		public IPEndPoint IPEndPoint { get; set; } = null;
+		#endregion
+		#region internal
+		/// <summary>
+		/// 根据相传入的数据，得到相应页面数据
+		/// </summary>
+		/// <param name="item">参数类对象</param>
+		/// <returns>返回HttpResult类型</returns>
+		internal HttpResult GetHtml(HttpItem item)
 		{
 			//返回参数
-			HttpResult result = new HttpResult();
-			result.Item = item;
+			HttpResult result = new HttpResult
+			{
+				Item = item
+			};
 			try
 			{
 				//准备参数
@@ -71,8 +67,8 @@ namespace HttpNetHelper.Base
 			try
 			{
 				//请求数据
-				Response = (HttpWebResponse)Request.GetResponse();
-				using (Response)
+				
+				using (Response = (HttpWebResponse)Request.GetResponse())
 				{
 					GetData(item, ref result);
 				}
@@ -80,9 +76,8 @@ namespace HttpNetHelper.Base
 			catch (WebException ex)
 			{
 				if (ex.Response != null)
-				{
-					Response = (HttpWebResponse)ex.Response;
-					using (Response)
+				{					
+					using (Response = (HttpWebResponse)ex.Response)
 					{
 						GetData(item, ref result);
 					}
@@ -126,8 +121,10 @@ namespace HttpNetHelper.Base
 		internal HttpResult FastRequest(HttpItem item)
 		{
 			//返回参数
-			HttpResult result = new HttpResult();
-			result.Item = item;
+			HttpResult result = new HttpResult
+			{
+				Item = item
+			};
 			try
 			{
 				//准备参数
@@ -138,7 +135,7 @@ namespace HttpNetHelper.Base
 				//配置参数时出错
 				return new HttpResult()
 				{
-					Cookie = ((Response.Headers["set-cookie"] != null) ? Response.Headers["set-cookie"] : string.Empty),
+					Cookie = (Response.Headers["set-cookie"] ?? string.Empty),
 					Header = null,
 					Html = ex.Message,
 					StatusDescription = "配置参数时出错：" + ex.Message
@@ -147,8 +144,8 @@ namespace HttpNetHelper.Base
 			try
 			{
 				//请求数据
-				Response = (HttpWebResponse)Request.GetResponse();
-				using (Response)
+				
+				using (Response = (HttpWebResponse)Request.GetResponse())
 				{
 					//成功 不做处理只回成功状态
 					return new HttpResult()
@@ -162,13 +159,13 @@ namespace HttpNetHelper.Base
 			}
 			catch (WebException ex)
 			{
-				Response = (HttpWebResponse)ex.Response;
-				using (Response)
+				
+				using (Response = (HttpWebResponse)ex.Response)
 				{
 					//不做处理只回成功状态
 					return new HttpResult()
 					{
-						Cookie = ((Response.Headers["set-cookie"] != null) ? Response.Headers["set-cookie"] : string.Empty),
+						Cookie = Response.Headers["set-cookie"] ?? string.Empty,
 						Header = Response.Headers,
 						StatusCode = Response.StatusCode,
 						StatusDescription = Response.StatusDescription
@@ -199,7 +196,7 @@ namespace HttpNetHelper.Base
 			{
 				return;
 			}
-			//			#Region "base"
+			#region "base"
 			//获取StatusCode
 			result.StatusCode = Response.StatusCode;
 			//获取最后访问的URl
@@ -224,7 +221,7 @@ namespace HttpNetHelper.Base
 				item.Cookie = result.Cookie;
 				item.CookieCollection = result.CookieCollection;
 			}
-			//			#End Region
+			#endregion
 
 			//			#Region "用户设置用编码"
 			//处理网页Byte
@@ -292,7 +289,7 @@ namespace HttpNetHelper.Base
 					c = meta.Groups[1].Value.ToLower().Trim();
 				}
 				string cs = string.Empty;
-				if (!string.IsNullOrWhiteSpace(response.CharacterSet))
+				if (!string.IsNullOrWhiteSpace(Response.CharacterSet))
 				{
 					cs = Response.CharacterSet.Trim().Replace("\"", "").Replace("'", "");
 				}
@@ -467,24 +464,8 @@ namespace HttpNetHelper.Base
 			}
 			//设置Post数据
 			SetPostData(item);
-			//If item.KeepAlive Then
-			//    SetHeaderValue(request.Headers, "Connection", "Keep-Alive")
-			//Else
-			//    request.KeepAlive = item.KeepAlive
-			//End If
-
 		}
-		private void SetHeaderValue(WebHeaderCollection header, string name, string value)
-		{
 
-			var property = typeof(WebHeaderCollection).GetProperty("InnerCollection", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-			if (property != null)
-			{
-				NameValueCollection collection = (NameValueCollection)property.GetValue(header, null);
-				collection.Set(name, value);
-				//collection(name) = value
-			}
-		}
 
 		/// <summary>
 		/// 设置证书
@@ -622,9 +603,11 @@ namespace HttpNetHelper.Base
 				}
 				else
 				{
-					WebProxy myProxy = new WebProxy(item.ProxyIp, false);
-					//建议连接
-					myProxy.Credentials = new NetworkCredential(item.ProxyUserName, item.ProxyPwd);
+					WebProxy myProxy = new WebProxy(item.ProxyIp, false)
+					{
+						//建议连接
+						Credentials = new NetworkCredential(item.ProxyUserName, item.ProxyPwd)
+					};
 					//给当前请求对象
 					Request.Proxy = myProxy;
 				}

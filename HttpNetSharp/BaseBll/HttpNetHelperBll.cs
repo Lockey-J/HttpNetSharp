@@ -44,6 +44,7 @@ namespace HttpNetHelper.BaseBll
 					result = Httpbase.GetHtml(item);
 					if (string.IsNullOrWhiteSpace(result.RedirectUrl))
 					{
+						item.Allowautoredirect = true;
 						break;
 					}
 					else
@@ -67,6 +68,7 @@ namespace HttpNetHelper.BaseBll
 						}
 					}
 				}
+
 				return result;
 			}
 			return Httpbase.GetHtml(item);
