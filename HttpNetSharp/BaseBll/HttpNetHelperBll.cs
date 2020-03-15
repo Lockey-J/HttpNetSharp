@@ -62,7 +62,7 @@ namespace HttpNetHelper.BaseBll
 						else
 						{
 							if (result.CookieCollection != null && result.CookieCollection.Count > 0)
-							{
+							{								
 								item.CookieContainer.Add(new Uri(item.URL), result.CookieCollection);
 							}
 						}
