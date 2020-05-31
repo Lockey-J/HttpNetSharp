@@ -367,7 +367,7 @@ namespace HttpNetHelper.Base
 		///<param name="item">参数列表</param>
 		private void SetRequest(HttpItem item)
 		{
-			GC.Collect();
+			//GC.Collect();
 
 			if (item.URL.StartsWith("https", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(item.CerPath))
 			{
